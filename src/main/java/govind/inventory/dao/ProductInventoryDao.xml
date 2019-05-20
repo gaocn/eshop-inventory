@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="govind.inventory.dao.ProductInventoryDao">
+    <resultMap id="ProductInventory" type="govind.inventory.dao.entity.ProductInventory">
+        <result property="productId" javaType="java.lang.Integer"  column="product_id"/>
+        <result property="productInventory"  javaType="java.lang.Long" column="inventory_cnt"/>
+    </resultMap>
+    <update id="updateInventoryCnt" >
+      update inventory_cnt set cnt = ${ic.productInventory} where product_id=${ic.productId}
+    </update>
+
+    <select id="findProductInventory" resultMap="ProductInventory">
+        select * from inventory_cnt where product_id=${productId}
+    </select>
+</mapper>
