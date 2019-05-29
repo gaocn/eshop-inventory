@@ -3,6 +3,7 @@ package govind.inventory.controller;
 import com.alibaba.fastjson.JSONObject;
 import govind.inventory.dao.RedisDao;
 import govind.inventory.dao.entity.ProductInfo;
+import govind.inventory.ehcache.ICacheService;
 import govind.inventory.warn.CacheWarm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class RedisController {
+	@Autowired
+	private ICacheService cacheService;
 	@Autowired
 	private RedisDao redisDao;
 
@@ -40,6 +43,14 @@ public class RedisController {
 	public String getProductInfo(@PathVariable("id") String key) {
 		String cacheKey = "product_" + key;
 		String productInfo = redisDao.get(cacheKey);
+
+		//从本地缓存中获取
+		if (productInfo == null) {
+			ProductInfo pi = cacheService.getProductInfoFromLocalCache(Integer.valueOf(key));
+			if (pi != null) {
+				productInfo = JSONObject.toJSONString(pi);
+			}
+		}
 
 		if (productInfo == null) {
 			//需要从数据源拉取数据，重建缓存！假设从数据源拉取的数据如下

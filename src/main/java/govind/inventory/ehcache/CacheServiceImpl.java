@@ -4,6 +4,10 @@ import com.alibaba.fastjson.JSONObject;
 import govind.inventory.dao.RedisDao;
 import govind.inventory.dao.entity.ProductInfo;
 import govind.inventory.dao.entity.ShopInfo;
+import govind.inventory.hystrix.command.GetProductInfoToRedisCommand;
+import govind.inventory.hystrix.command.GetShopInfoToRedisCommand;
+import govind.inventory.hystrix.command.SaveProductInfoToRedisCommand;
+import govind.inventory.hystrix.command.SaveShopInfoToRedisCommand;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -47,18 +51,22 @@ public class CacheServiceImpl implements ICacheService {
 	 */
 	@Override
 	public void saveProductInfoToRedisCache(ProductInfo productInfo) {
-		String key = "product_" + productInfo.getId();
-		redisDao.set(key, JSONObject.toJSONString(productInfo));
+		//String key = "product_" + productInfo.getId();
+		//redisDao.set(key, JSONObject.toJSONString(productInfo));
+		SaveProductInfoToRedisCommand command = new SaveProductInfoToRedisCommand(productInfo);
+		command.execute();
 	}
 
 	@Override
 	public ProductInfo getProductInfoFromRedisCache(Integer productId) {
-		String key = "product_" + productId;
-		String json = redisDao.get(key);
-		if (json != null) {
-			return JSONObject.parseObject(json, ProductInfo.class);
-		}
-		return null;
+//		String key = "product_" + productId;
+//		String json = redisDao.get(key);
+//		if (json != null) {
+//			return JSONObject.parseObject(json, ProductInfo.class);
+//		}
+//		return null;
+		GetProductInfoToRedisCommand command = new GetProductInfoToRedisCommand(productId);
+		return command.execute();
 	}
 
 	/**
@@ -75,17 +83,21 @@ public class CacheServiceImpl implements ICacheService {
 	 */
 	@Override
 	public void saveShopInfoToRedisCache(ShopInfo shopInfo) {
-		String key = "shop_" + shopInfo.getId();
-		redisDao.set(key, JSONObject.toJSONString(shopInfo));
+		//String key = "shop_" + shopInfo.getId();
+		//redisDao.set(key, JSONObject.toJSONString(shopInfo));
+		SaveShopInfoToRedisCommand command = new SaveShopInfoToRedisCommand(shopInfo);
+		command.execute();
 	}
 
 	@Override
 	public ShopInfo getShopInfoToRedisCache(Integer shopId) {
-		String key = "shop_" + shopId;
-		String json = redisDao.get(key);
-		if (json != null) {
-			return JSONObject.parseObject(json, ShopInfo.class);
-		}
-		return null;
+//		String key = "shop_" + shopId;
+//		String json = redisDao.get(key);
+//		if (json != null) {
+//			return JSONObject.parseObject(json, ShopInfo.class);
+//		}
+//		return null;
+		GetShopInfoToRedisCommand command = new GetShopInfoToRedisCommand(shopId);
+		return command.execute();
 	}
 }
