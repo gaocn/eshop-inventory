@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import govind.inventory.dao.RedisDao;
 import govind.inventory.dao.entity.ProductInfo;
 import govind.inventory.ehcache.ICacheService;
+import govind.inventory.hystrix.command.GetProductInfoCommand;
 import govind.inventory.warn.CacheWarm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,11 +54,9 @@ public class RedisController {
 		}
 
 		if (productInfo == null) {
-			//需要从数据源拉取数据，重建缓存！假设从数据源拉取的数据如下
-			String productInfoJson = "{\"id\":2, \"name\":\"iphone8手机\", \"price\":6999,\"pictures\":\"a.jpg,b.jpg\",\"specification\":\"iphone8规格\",\"service\":\"售后服务\", \"color\":\"black\", \"size\":\"5.5\",\"shopId\":1,\"modifiedTime\":\"2019-05-17 21:30:00\"}";
-			log.info("成功从商品服务拉取数据：{}", productInfoJson);
-			// 将查询的结果分别存放到Ehcache、Redis中
-			ProductInfo productInfo1 = JSONObject.parseObject(productInfoJson, ProductInfo.class);
+			GetProductInfoCommand command = new GetProductInfoCommand(Long.valueOf(key));
+			ProductInfo productInfo1 = command.execute();
+			log.info("成功从商品服务拉取数据：{}", productInfo1);
 			//将数据推送到一个内存队列中
 			RebuildCacheQueue.getInstace().putProductInfo(productInfo1);
 		}
