@@ -47,6 +47,11 @@ local shopCacheKey = "shop_info_" .. shopId
 local productCache = cache_ngx:get(productCacheKey)
 local shopCache = cache_ngx:get(shopCacheKey)
 
+-- 为防止大量缓存失效导致到redis并发请求较多，增加网络负载，这里使用一个过期
+--时间范围
+math.randomseed(tostring(os.time()):reverse():sub(1, 7))
+
+
 if productCache == "" or productCacheKey == nil then
     local http = require("resty.http")
     local client = http.new()
@@ -56,7 +61,9 @@ if productCache == "" or productCacheKey == nil then
         path = "/getProductInfo/" .. productId
     })
     productCache = resp.body
-    cache_ngx:set(productCacheKey, productCache, 10 * 60)
+    -- 过期时间设置为600s~1200s之间
+    local expireTime = math.random(600, 1200)
+    cache_ngx:set(productCacheKey, productCache, expireTime)
 end
 
 if shopCache == "" or shopCache == nil then
@@ -68,7 +75,9 @@ if shopCache == "" or shopCache == nil then
         path = "/getShopInfo/" .. shopId
     })
     shopCache = resp.body
-    cache_ngx:set(shopCacheKey, shopCache, 10 * 60)
+    -- 过期时间设置为600s~1200s之间
+    local expireTime = math.random(600, 1200)
+    cache_ngx:set(shopCacheKey, shopCache, expireTime)
 end
 
 local cjson = require("cjson")
